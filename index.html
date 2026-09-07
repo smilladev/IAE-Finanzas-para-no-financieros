@@ -521,12 +521,12 @@
         // keepalive asegura que la petición se complete aunque
         // Doppler navegue a una página de agradecimiento.
         //
-        // ⚠️ PENDIENTE: falta el spreadsheetId real y la URL del webhook de
-        // Apps Script (todavía no están definidos para este programa). Hasta
-        // reemplazar los dos placeholders de abajo, este bloque no escribe
-        // en ningún Sheet real.
+        // ⚠️ PENDIENTE: falta la URL del webhook de Apps Script (todavía no
+        // hay deployment para este programa). El spreadsheetId ya es el real
+        // (Sheet confirmado 2026-09-07). Hasta reemplazar el placeholder de
+        // abajo, este bloque no escribe en ningún Sheet real.
         const payload = Object.assign({}, formData, {
-          spreadsheetId: 'REPLACE_WITH_SPREADSHEET_ID',
+          spreadsheetId: '1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA',
           phonePrefix:   phonePrefix.replace('+', ''),
           phoneNumber:   phoneNumber,
           // Fecha/hora de carga del lead (hora Argentina) — columna Timestamp del Sheet

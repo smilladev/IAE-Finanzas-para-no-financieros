@@ -1,14 +1,22 @@
-// ⚠️ PENDIENTE DE CONFIRMAR: todavia no tenemos el Sheet destino real para el
-// programa "Finanzas para no financieros" ni su fila de encabezados. El
-// SPREADSHEET_ID y el orden de columnas de abajo son un DRAFT calcado del
-// Script.js de "Director de Ventas" (mismos campos de origen del form) -- NO
-// deployar este archivo sin antes:
-//   1. Reemplazar SPREADSHEET_ID/SHEET_NAME por los reales.
-//   2. Pedir la fila 1 (encabezados) real del Sheet destino y reescribir el
-//      array de appendRow() para que calce EXACTO en ese orden (es posicional,
-//      no hace matching por nombre de columna).
-const SPREADSHEET_ID = "REPLACE_WITH_SPREADSHEET_ID";
-const SHEET_NAME = "Sheet1";
+// Sheet destino confirmado (2026-09-07):
+// https://docs.google.com/spreadsheets/d/1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA/edit?gid=0
+//
+// La fila 1 (encabezados) de la pestaña gid=0 confirmada por CSV export tiene
+// EXACTO las mismas 25 columnas (mismo orden) que ya usaba Director de Ventas:
+// DB_Tipo de Documento | DB_Nro. de documento | Correo electronico | Nombre | Apellido |
+// DB_Sexo | DB_Fecha de Nacimiento | Pais de Residencia | Provincia DP | Ciudad DP |
+// Pais Telefono | Telefono Codigo Area | Telefono 3 | Producto Nombre | ID. |
+// utm_source | utm_medium | utm_content | utm_term | utm_campaign | campaniaid | Canal |
+// Plantilla auto respuesta | Derivar a | Derivar a cola
+//
+// ⚠️ OJO: a diferencia del Sheet de Ventas, ESTE Sheet todavia NO tiene las 6
+// columnas de scoring al final (Formacion academica | Cargo | Area practica |
+// Score | Value | Timestamp) -- el header row termina en "Derivar a cola"
+// (columna 25). El appendRow() de abajo las escribe igual en las columnas 26-31
+// porque es puramente posicional, pero van a quedar sin titulo hasta que alguien
+// agregue esos 6 encabezados a mano en el Sheet. Avisar al equipo antes de dar
+// esto por terminado.
+const SPREADSHEET_ID = "1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA";
 
 function doPost(e) {
   try {
@@ -23,22 +31,13 @@ function doPost(e) {
       throw new Error('No se pudo encontrar el Spreadsheet.');
     }
 
-    const sheet = ss.getSheetByName(SHEET_NAME);
+    // Se usa el gid (id numerico de la pestana, "0" en la URL) en vez del
+    // nombre de la pestana -- mas confiable si alguien renombra la hoja.
+    const sheet = ss.getSheetById(0);
     if (!sheet) {
-      throw new Error('No se encontro la pestana: ' + SHEET_NAME);
+      throw new Error('No se encontro la pestana con gid=0.');
     }
 
-    // DRAFT -- el orden de abajo todavia NO fue confirmado contra la fila 1
-    // (encabezados) real del sheet destino. Es una copia del layout de
-    // Director de Ventas con los campos de origen que ya sabemos que existen
-    // en el form de Finanzas (mismos name de Doppler). Ajustar antes de usar:
-    // DB_Tipo de Documento | DB_Nro. de documento | Correo electronico | Nombre | Apellido |
-    // DB_Sexo | DB_Fecha de Nacimiento | Pais de Residencia | Provincia DP | Ciudad DP |
-    // Pais Telefono | Telefono Codigo Area | Telefono 3 | Producto Nombre | ID. |
-    // utm_source | utm_medium | utm_content | utm_term | utm_campaign | campaniaid | Canal |
-    // Plantilla auto respuesta | Derivar a | Derivar a cola
-    // + columnas nuevas al final: Formacion academica | Cargo | Area practica | Score | Value | Timestamp
-    //
     // Provincia DP, Ciudad DP, Telefono Codigo Area, Producto Nombre, ID., campaniaid,
     // Canal, Plantilla auto respuesta, Derivar a y Derivar a cola no tienen un campo
     // de origen en el form/formData todavia -> quedan vacias a proposito.

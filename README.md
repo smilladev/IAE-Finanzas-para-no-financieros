@@ -4,7 +4,7 @@
 
 Este sistema calcula automáticamente el **Lead Score** (0-100%) y el **Lead Value** (USD) de cada lead capturado a través del formulario Doppler del programa **Finanzas para no Financieros** (IAE Business School). El sistema evalúa múltiples dimensiones del perfil del lead y envía los datos a Google Tag Manager (GTM), plataformas de publicidad (Google Ads y Meta Ads) y a un Google Sheet vía webhook de Google Apps Script.
 
-> ⚠️ **Estado**: el spreadsheet destino y el webhook de Apps Script todavía no están definidos (ver placeholders `REPLACE_WITH_SPREADSHEET_ID` / `REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL` en `index.html` y `Script.js`). El scoring, hashing y envío a GTM ya están probados y funcionando.
+> ⚠️ **Estado**: Sheet destino confirmado — [1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA](https://docs.google.com/spreadsheets/d/1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA/edit?gid=0), mismo layout de 25 columnas que Director de Ventas — pero **todavía le faltan las 6 columnas de scoring al final** (Formación académica, Cargo, Área práctica, Score, Value, Timestamp; ver nota en `Script.js`). Falta también el deployment de Apps Script (webhook, placeholder `REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL` en `index.html`). El scoring, hashing y envío a GTM ya están probados y funcionando.
 
 ---
 
@@ -568,7 +568,7 @@ fbq('track', 'Lead', {
 
 **Endpoint:** `REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL` (pendiente — ver estado al inicio de este documento)
 
-El POST va con `mode: 'no-cors'`, así que el navegador nunca ve la respuesta real; `Script.js` responde `{status:'ok'}` o `{status:'error', message}` y hace `sheet.appendRow([...])` en un orden posicional que debe calzar con la fila de encabezados real del Sheet (ver comentario `DRAFT` en `Script.js`).
+El POST va con `mode: 'no-cors'`, así que el navegador nunca ve la respuesta real; `Script.js` responde `{status:'ok'}` o `{status:'error', message}` y hace `sheet.appendRow([...])` en un orden posicional que calza con la fila de encabezados real del Sheet (confirmada por CSV export — ver comentario en `Script.js`). Ojo: al Sheet le faltan agregar las 6 columnas de scoring al final antes de ir a producción.
 
 **Payload enviado (ejemplo):**
 ```json
@@ -579,7 +579,7 @@ El POST va con `mode: 'no-cors'`, así que el navegador nunca ve la respuesta re
   "_dp_string35228": "Administración & Finanzas",
   "LeadScore": 83.5,
   "LeadValue": 43.78,
-  "spreadsheetId": "REPLACE_WITH_SPREADSHEET_ID",
+  "spreadsheetId": "1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA",
   "phonePrefix": "54",
   "phoneNumber": "91122334455",
   "timestamp": "07/09/2026, 14:30:00",
