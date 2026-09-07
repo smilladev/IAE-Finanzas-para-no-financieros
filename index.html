@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulario Doppler</title>
+
+  <!-- Google Tag Manager -->
+  <script>(function (w, d, s, l, i) {
+      w[l] = w[l] || []; w[l].push({
+        'gtm.start':
+          new Date().getTime(), event: 'gtm.js'
+      }); var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', 'GTM-K5DTMCH');</script>
+  <!-- End Google Tag Manager -->
+
+  <style>
+    /* Campo oculto: industria (peso 0% en el modelo de scoring de Finanzas para no financieros) */
+    /* Oculta el input/select */
+    [name="_dp_string219311"] {
+      display: none !important;
+    }
+    /* Oculta el contenedor completo (label + input) para eliminar el espacio vacío */
+    li:has([name="_dp_string219311"]),
+    div:has(> [name="_dp_string219311"]) {
+      display: none !important;
+    }
+  </style>
+
+  <!-- Doppler Form Generator -->
+  <script src="https://cdn.fromdoppler.com/formgenerator/latest/vendor.js?67493465"></script>
+  <link rel="stylesheet" href="https://cdn.fromdoppler.com/formgenerator/latest/styles.css?67493465" />
+
+  <script>
+    console.log('🚀 IAE Formulario — Finanzas para no Financieros v1.0 — 2026-09-07');
+
+    // ============================================================
+    // 1. PERSISTENCIA DE CLICK IDs Y UTMs EN sessionStorage
+    //    Se ejecuta al cargar la página, antes de cualquier
+    //    redirección interna que Doppler pueda hacer.
+    // ============================================================
+    (function () {
+      const p = new URLSearchParams(window.location.search);
+      ['utm', 'utm_source', 'utm_medium', 'utm_campaign',
+        'utm_term', 'utm_content', 'gclid', 'fbclid'].forEach(function (key) {
+        const val = p.get(key);
+        if (val) sessionStorage.setItem(key, val);
+      });
+    })();
+
+    // ============================================================
+    // 2. CAPTURA DE PARÁMETROS DE URL + sessionStorage como fallback
+    // ============================================================
+    function captureClickParams() {
+      const p = new URLSearchParams(window.location.search);
+      return {
+        utm:          p.get('utm')          || sessionStorage.getItem('utm')          || '',
+        utm_source:   p.get('utm_source')   || sessionStorage.getItem('utm_source')   || '',
+        utm_medium:   p.get('utm_medium')   || sessionStorage.getItem('utm_medium')   || '',
+        utm_campaign: p.get('utm_campaign') || sessionStorage.getItem('utm_campaign') || '',
+        utm_term:     p.get('utm_term')     || sessionStorage.getItem('utm_term')     || '',
+        utm_content:  p.get('utm_content')  || sessionStorage.getItem('utm_content')  || '',
+        gclid:        p.get('gclid')        || sessionStorage.getItem('gclid')        || '',
+        fbclid:       p.get('fbclid')       || sessionStorage.getItem('fbclid')       || ''
+      };
+    }
+
+    // ============================================================
+    // 3. HASHING SHA-256 PARA CONVERSIONES MEJORADAS
+    //    Requerido por Google Enhanced Conversions y Meta CAPI.
+    //    Nota: crypto.subtle solo funciona sobre HTTPS.
+    // ============================================================
+
+    /** Normaliza un string: minúsculas + trim (requerimiento Google/Meta). */
+    function normalizeString(str) {
+      return (str || '').toLowerCase().trim();
+    }
+
+    /**
+     * Normaliza un teléfono a formato E.164: conserva solo dígitos y el '+' inicial.
+     * IMPORTANTE: el usuario debe ingresar el código de país (ej: +5491156789012).
+     * Sin código de país Meta no puede hacer match del lead.
+     */
+    function normalizePhone(phone) {
+      return (phone || '').trim().replace(/[^\d+]/g, '');
+    }
+
+    /** Genera el hash SHA-256 (hex string) de un valor normalizado. */
+    async function hashSHA256(value) {
+      if (!value) return '';
+      const encoded = new TextEncoder().encode(normalizeString(value));
+      const buffer  = await crypto.subtle.digest('SHA-256', encoded);
+      return Array.from(new Uint8Array(buffer))
+        .map(function (b) { return b.toString(16).padStart(2, '0'); })
+        .join('');
+    }
+
+    /** Fecha/hora local de Argentina en formato dd/mm/aaaa, hh:mm:ss — para la columna Timestamp del Sheet. */
+    function timestampBuenosAires() {
+      return new Date().toLocaleString('es-AR', {
+        timeZone: 'America/Argentina/Buenos_Aires',
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      });
+    }
+
+    // ============================================================
+    // 4b. OCULTAR CAMPO DE INDUSTRIA
+    //     Peso 0% en el modelo de scoring de Finanzas para no financieros.
+    //     Se oculta en el DOM y no participa del cálculo.
+    // ============================================================
+    function hideFormFields(form) {
+      var fieldsToHide = [
+        '_dp_string219311' // industria
+      ];
+      fieldsToHide.forEach(function (fieldName) {
+        var el = form.querySelector('[name="' + fieldName + '"]');
+        if (!el) return;
+
+        // 1. Quitar required y asignar primer valor válido para que la
+        //    validación interna de Doppler no bloquee el submit.
+        el.required = false;
+        el.removeAttribute('required');
+        if (el.tagName === 'SELECT') {
+          var firstOpt = el.querySelector('option[value]:not([value=""])');
+          if (firstOpt) el.value = firstOpt.value;
+        } else if (!el.value) {
+          el.value = 'N/A';
+        }
+
+        // 2. Sube por el DOM hasta encontrar el contenedor raíz del campo
+        //    (hijo directo del form, <ul> o <ol>) y lo oculta completo.
+        var node = el;
+        while (node && node !== form) {
+          var parent = node.parentElement;
+          if (!parent || parent === form ||
+              parent.tagName === 'UL' || parent.tagName === 'OL') {
+            node.style.cssText += ';display:none!important;margin:0!important;padding:0!important;';
+            break;
+          }
+          node = parent;
+        }
+      });
+    }
+
+    // ============================================================
+    // 4c. FORZAR OBLIGATORIEDAD EN NIVEL DE ESTUDIOS, CARGO Y ÁREA
+    //     Doppler puede no marcarlos como required; lo garantizamos
+    //     aquí para que el navegador bloquee el submit si están vacíos.
+    // ============================================================
+    function makeFieldsRequired(form) {
+      var fieldsRequired = [
+        '_dp_string219310', // nivel_de_estudios
+        '_dp_string18650',  // cargo
+        '_dp_string35228'   // area_practica
+      ];
+      fieldsRequired.forEach(function (fieldName) {
+        var el = form.querySelector('[name="' + fieldName + '"]');
+        if (!el) return;
+        el.required = true;
+        el.setAttribute('required', '');
+      });
+    }
+
+    // ============================================================
+    // 4. INYECCIÓN DE CAMPOS HIDDEN (UTMs + Click IDs)
+    //    Los valores se envían a Doppler/CRM junto con el formulario.
+    // ============================================================
+    function injectClickParamFields(form) {
+      const params = captureClickParams();
+      Object.keys(params).forEach(function (key) {
+        // No duplicar si el campo ya fue inyectado
+        if (params[key] && !form.querySelector('input[name="' + key + '"]')) {
+          const input = document.createElement('input');
+          input.type  = 'hidden';
+          input.name  = key;
+          input.value = params[key];
+          form.appendChild(input);
+        }
+      });
+      console.log('✅ Click params inyectados:', params);
+    }
+
+    // ============================================================
+    // 5. LÓGICA PRINCIPAL: SCORING + HASHING + DATA LAYER
+    // ============================================================
+    function captureFormData() {
+
+      // handleSubmit es async para poder awaitar el hashing SHA-256
+      const handleSubmit = async function (e) {
+
+        const form = e.target;
+
+        // ── VALIDACIÓN DE CAMPOS OBLIGATORIOS ───────────────────
+        // Si falta o está mal completado algún campo required del form
+        // (Doppler puede disparar el submit sin pasar por la validación
+        // nativa del navegador), no se envía nada ni a GTM ni a Sheets.
+        //
+        // Doppler además tiene su propia validación de formato (ej: email,
+        // teléfono) independiente del required nativo — algunos campos los
+        // renderiza como type="text" sin pattern, así que checkValidity()
+        // sola no la detecta. Cuando falla, Doppler le agrega la clase
+        // "error" al input/select y crea un <label class="error"> con el
+        // mensaje. Ese label queda con la clase "error" aunque el campo ya
+        // esté corregido (solo lo oculta con display:none), por eso NO hay
+        // que mirar cualquier ".error" del form — solo si el campo en sí
+        // (input/select/textarea) todavía tiene la clase.
+        const dopplerFieldErrors = form.querySelectorAll('input.error, select.error, textarea.error');
+
+        // Refuerzo extra: ademas del required nativo, se chequea a mano que
+        // ningun campo de texto libre (nombre, apellido, email, telefono,
+        // fecha, numero de documento) quede vacio o solo con espacios. Esto
+        // ya deberia estar cubierto por required + checkValidity(), pero
+        // queda como red de seguridad por si Doppler cambia algun campo y
+        // deja de marcarlo required. Telefono es type="tel", el resto es
+        // type="text" -- se incluyen ambos.
+        // OJO: Doppler tiene inputs type="text" decorativos con name=""
+        // (muestran el texto elegido al lado de cada select) que siempre
+        // estan vacios -- se excluyen por name vacio para no bloquear todo.
+        const emptyTextFields = Array.from(form.querySelectorAll('input[type="text"], input[type="tel"]')).filter(function (el) {
+          return el.name && (!el.value || !el.value.trim());
+        });
+
+        if (!form.checkValidity() || dopplerFieldErrors.length > 0 || emptyTextFields.length > 0) {
+          console.warn('⛔ Formulario incompleto o inválido — no se envía a GTM ni a Sheets.',
+            dopplerFieldErrors.length > 0
+              ? 'Campos marcados por Doppler: ' + Array.from(dopplerFieldErrors).map(function (f) { return f.name; }).join(', ')
+              : '',
+            emptyTextFields.length > 0
+              ? 'Campos de texto vacíos: ' + emptyTextFields.map(function (f) { return f.name; }).join(', ')
+              : '');
+          if (typeof form.reportValidity === 'function') form.reportValidity();
+          return;
+        }
+
+        // ── LEAD SCORING ────────────────────────────────────────
+        // Fuente: "Conversiones online.xlsx", hoja "Finanzas para no financieros".
+
+        // Scores 0-10 por dimensión. Score 0 = lead descalificado.
+        const estudiosScoring = {
+          "Secundario incompleto": 0,
+          "Secundario completo": 10,
+          "Terciario incompleto": 10,
+          "Terciario completo": 10,
+          "Universitario incompleto": 10,
+          "Universitario completo": 10,
+          "Posgrado/Maestría": 10,
+          "Doctorado/PhD": 10,
+          "Doctorado/PhD.": 10
+        };
+
+        const cargoScoring = {
+          "Académico": 1,
+          "Analista": 9,
+          "Asesor/Consultor": 2,
+          "Asistente / Administrativo": 10,
+          "Auditor": 2,
+          "Coordinador / Supervisor": 10,
+          "Desocupado": 1,
+          "Director de Área": 7,
+          "Director en Directorio": 7,
+          "Director General": 7,
+          "Dueño / Socio": 9,
+          "Ejecutivo Comercial / KAM / Ventas": 9,
+          "Emprendedor": 9,
+          "Especialista (en relación de dependencia: abogado, ingeniero, programador, diseñador...)": 9,
+          "Funcionario Público": 1,
+          "Gerente de Área": 9,
+          "Gerente General / CEO": 7,
+          "Jefe de Área / Departamento": 10,
+          "Presidente": 1,
+          "Profesional Independiente": 8,
+          "Subgte. Area": 9,
+          "Subgte. General": 8,
+          "Vicepresidente": 2
+        };
+
+        const areaScoring = {
+          "Académico / Formación": 2,
+          "Administración & Finanzas": 9,
+          "Calidad / Seguridad / Medio Ambiente (HSE)": 2,
+          "Comercial / Ventas / Customer Experience": 10,
+          "Control de Gestión / Auditoría": 8,
+          "Data & Analytics / Transformación Digital": 1,
+          "Dirección General / Alta Gerencia": 1,
+          "Investigación & Desarrollo (I+D)": 1,
+          "Legal & Compliance": 1,
+          "Marketing & Comunicación": 1,
+          "Operaciones / Supply Chain": 9,
+          "Otros": 5,
+          "Planeamiento Estratégico / Desarrollo de Negocios": 8,
+          "Producto & Innovación": 2,
+          "Proyectos & Ingeniería": 7,
+          "Recursos Humanos": 1,
+          "Relaciones Institucionales / Comunicación Externa": 1,
+          "Salud / Servicios Médicos": 1,
+          "Sustentabilidad, ESG & Responsabilidad Social": 1,
+          "Tecnología / Sistemas": 9
+        };
+
+        // Pesos por dimensión (pts → score %, usd → lead value)
+        // Industria, N° de empleados y Años de experiencia quedan sin peso (no participan del scoring)
+        // Valor base del programa: (3670000/1500 * 0.3) / 14 = 52.42857143
+        const PESOS = {
+          estudios: { pts: 1,  usd: 0.5242857143 },
+          cargo:    { pts: 33, usd: 17.30142857 },
+          area:     { pts: 66, usd: 34.60285714 }
+        };
+
+        // Capturar todos los campos del formulario
+        const formData = {};
+        form.querySelectorAll('input, select, textarea').forEach(function (input) {
+          const name  = input.name || input.id || input.getAttribute('data-field');
+          const value = input.type === 'checkbox' ? input.checked : input.value;
+          if (name && value) formData[name] = value;
+        });
+
+        console.log('formData ->', JSON.stringify(formData));
+
+        // DEBUG
+        console.log('🔍 VALORES CAPTURADOS:');
+        console.log('  Estudios (_dp_string219310):', formData['_dp_string219310']);
+        console.log('  Cargo (_dp_string18650):', formData['_dp_string18650']);
+        console.log('  Área (_dp_string35228):', formData['_dp_string35228']);
+        console.log('  Industria (_dp_string219311, no participa del scoring):', formData['_dp_string219311']);
+
+        // Scores individuales (nullish coalescing: undefined → 0, no confunde con score=0 explícito)
+        // Nota: industria está oculta → no participa en el scoring
+        const scoreEstudios = estudiosScoring[formData['_dp_string219310']] ?? 0;
+        const scoreCargo    = cargoScoring[formData['_dp_string18650']]     ?? 0;
+        const scoreArea     = areaScoring[formData['_dp_string35228']]     ?? 0;
+
+        // Descalificación si algún score es 0
+        if ([scoreEstudios, scoreCargo, scoreArea].some(function (s) { return s === 0; })) {
+          formData['LeadScore'] = 0;
+          formData['LeadValue'] = 0;
+          console.log('========================================');
+          console.log('🚫 LEAD DESCALIFICADO');
+          console.log('  Estudios:', scoreEstudios, '| Cargo:', scoreCargo, '| Área:', scoreArea);
+          console.log('========================================');
+        } else {
+          const leadScore = Math.round((
+            (scoreEstudios / 10 * PESOS.estudios.pts) +
+            (scoreCargo    / 10 * PESOS.cargo.pts) +
+            (scoreArea     / 10 * PESOS.area.pts)
+          ) * 100) / 100;
+
+          const leadValue = Math.round((
+            (scoreEstudios / 10 * PESOS.estudios.usd) +
+            (scoreCargo    / 10 * PESOS.cargo.usd) +
+            (scoreArea     / 10 * PESOS.area.usd)
+          ) * 100) / 100;
+
+          formData['LeadScore'] = leadScore;
+          formData['LeadValue'] = leadValue;
+          console.log('========================================');
+          console.log('✅ LEAD CALIFICADO');
+          console.log('  Score:', leadScore + '%', '| Value: $' + leadValue);
+          console.log('========================================');
+        }
+
+        // ── MAPEO DE PAÍS (ID → NOMBRE) ─────────────────────────
+        // IDs internos de Doppler → nombre del país (extraídos del vendor.js de Doppler)
+        const paisMapping = {
+          // América del Sur
+          "10":  "Argentina",  "29":  "Bolivia",    "31":  "Brasil",
+          "46":  "Chile",      "49":  "Colombia",   "63":  "Ecuador",
+          "174": "Peru",       "186": "Paraguay",   "234": "Uruguay",
+          "238": "Venezuela",  "94":  "Guyana",     "207": "Suriname",
+          // América Central y Caribe
+          "157": "México",     "50":  "Costa Rica", "61":  "República Dominicana",
+          "210": "El Salvador","91":  "Guatemala",  "97":  "Honduras",
+          "165": "Nicaragua",  "173": "Panamá",     "99":  "Haití",
+          "112": "Jamaica",    "51":  "Cuba",       "182": "Puerto Rico",
+          // América del Norte
+          "233": "Estados Unidos", "38": "Canadá",
+          // Europa
+          "68":  "España",     "75":  "Francia",    "57":  "Alemania",
+          "110": "Italia",     "77":  "Reino Unido","43":  "Suiza",
+          "179": "Polonia",    "189": "Rumania",    "197": "Suecia",
+          // Otros
+          "48":  "China",      "114": "Japón",      "105": "India",
+          "13":  "Australia",  "2":   "Emiratos Árabes Unidos"
+        };
+        for (const key in formData) {
+          if (key.toLowerCase().includes('country') || key.toLowerCase().includes('pais')) {
+            const id = String(formData[key]);
+            if (paisMapping[id]) {
+              formData[key] = paisMapping[id];
+              console.log('🌍 País mapeado: ID ' + id + ' → ' + paisMapping[id]);
+            }
+          }
+        }
+
+        // ── HASHING SHA-256 (Conversiones Mejoradas Google + Meta CAPI) ──
+
+        // Buscar email y teléfono. Doppler renderiza el campo de email como
+        // input[type="text"] (name="_dp_email"), no type="email" — por eso
+        // se busca primero por el campo _dp_email* de formData, igual que
+        // ya se hacía con el teléfono.
+        const emailField = form.querySelector('input[type="email"]');
+        const phoneField = form.querySelector('input[type="tel"]');
+
+        // Doppler puede cambiar el sufijo numérico del campo teléfono (ej: _dp_phone219293)
+        // El campo _dp_phone* contiene el número COMPLETO con prefijo (ej: "+54 9 11 56789012")
+        // mientras que phoneField.value suele tener solo los dígitos sin prefijo → priorizamos _dp_phone*
+        const dopplerEmailKey = Object.keys(formData).find(function(k) { return /^_dp_email/.test(k); });
+        const dopplerPhoneKey = Object.keys(formData).find(function(k) { return /^_dp_phone/.test(k); });
+        console.log('📧 Campo email Doppler detectado:', dopplerEmailKey || '(no encontrado)');
+        console.log('📞 Campo teléfono Doppler detectado:', dopplerPhoneKey || '(no encontrado)');
+
+        const emailRaw = (dopplerEmailKey ? formData[dopplerEmailKey] : '') ||
+                         (emailField ? emailField.value.trim() : '') ||
+                         formData['EMAIL'] || formData['email'] || '';
+        const phoneRaw = (dopplerPhoneKey ? formData[dopplerPhoneKey] : '') ||
+                         (phoneField ? phoneField.value.trim() : '') ||
+                         formData['PHONE'] || formData['phone'] || '';
+
+        // Para Sheets: separar prefijo y número local.
+        // Soporta tanto "+54 91156789012" (con espacio) como "+5491156789012" (sin espacio).
+        // Los códigos de 3 dígitos van primero para evitar coincidencias parciales (ej: +595 antes de +59).
+        const DIAL_CODES = ['+595', '+591', '+593', '+52', '+54', '+55', '+56', '+57', '+51', '+58', '+1'];
+        const phoneRawTrimmed = (phoneRaw || '').trim();
+        const phoneCompact    = phoneRawTrimmed.replace(/\s/g, '');  // sin espacios, para matching
+        let phonePrefix = '';
+        let phoneNumber = '';
+        if (phoneCompact.startsWith('+')) {
+          const matched = DIAL_CODES.find(function (code) { return phoneCompact.startsWith(code); });
+          if (matched) {
+            phonePrefix = matched;
+            phoneNumber = phoneCompact.substring(matched.length).replace(/[^\d]/g, '');
+          } else {
+            // Fallback: si había espacio, usar como separador; si no, todo es número
+            const spaceIdx = phoneRawTrimmed.indexOf(' ');
+            phonePrefix = spaceIdx > -1 ? phoneRawTrimmed.substring(0, spaceIdx).replace(/[^\d+]/g, '') : '';
+            phoneNumber = spaceIdx > -1
+              ? phoneRawTrimmed.substring(spaceIdx + 1).replace(/[^\d]/g, '')
+              : phoneCompact.replace(/[^\d]/g, '');
+          }
+        } else {
+          phoneNumber = phoneCompact.replace(/[^\d]/g, '');
+        }
+
+        // Para GTM: número completo normalizado en E.164
+        const phoneNorm = normalizePhone(phoneRaw);
+
+        console.log('📞 Prefijo capturado:', phonePrefix || '(sin espacio — todo en número)');
+        console.log('📞 Número local capturado:', phoneNumber);
+
+        // Advertencia de formato E.164 — crítico para match de Meta
+        if (phoneNorm && !/^\+\d{7,15}$/.test(phoneNorm)) {
+          console.warn('⚠️ Teléfono sin formato E.164 (esperado: +5491156789012).',
+                       'Valor capturado:', phoneNorm,
+                       '— Meta no podrá hacer match de este lead.');
+        }
+
+        // Hash en paralelo (rápido, no bloquea el submit de Doppler)
+        const [hashedEmail, hashedPhone] = await Promise.all([
+          hashSHA256(emailRaw),
+          hashSHA256(phoneNorm)
+        ]);
+
+        console.log('🔐 Email hash (SHA-256):', hashedEmail || '(vacío)');
+        console.log('🔐 Phone hash (SHA-256):', hashedPhone || '(vacío)');
+
+        // ── DATA LAYER ───────────────────────────────────────────
+        const clickParams = captureClickParams();
+
+        if (window.dataLayer) {
+          // EVENTO 1 — form_submission
+          // Usar este evento en GTM para disparar:
+          //   · Conversión de Google Ads con Enhanced Conversions
+          //   · Meta Pixel con Conversions API (CAPI)
+          window.dataLayer.push({
+            event:                'form_submission',
+            // Datos hasheados — Google Enhanced Conversions
+            sha256_email_address: hashedEmail,
+            sha256_phone_number:  hashedPhone,
+            // Datos hasheados — Meta CAPI
+            em:                   hashedEmail,
+            ph:                   hashedPhone,
+            // Datos en texto plano
+            first_name:           normalizeString(formData['_dp_string319'] || formData['FIRSTNAME'] || ''),
+            city:                 normalizeString(formData['CITY'] || formData['ciudad'] || ''),
+            // Click IDs — críticos para atribución
+            gclid:                clickParams.gclid,
+            fbclid:               clickParams.fbclid,
+            // UTMs
+            utm_source:           clickParams.utm_source,
+            utm_medium:           clickParams.utm_medium,
+            utm_campaign:         clickParams.utm_campaign,
+            utm_term:             clickParams.utm_term,
+            utm_content:          clickParams.utm_content,
+            // Lead Scoring
+            lead_score:           Number(formData['LeadScore']),
+            lead_value:           Number(formData['LeadValue']),
+            timestamp:            new Date().toISOString()
+          });
+          console.log('🎯 [form_submission] enviado a GTM con datos hasheados');
+
+          // EVENTO 2 — dopplerFormSubmit (mantener compatibilidad con triggers GTM existentes)
+          window.dataLayer.push({
+            event:      'dopplerFormSubmit',
+            formId:     'TPKCHvISMx1tzZ1AeKLquw==',
+            formData:   formData,
+            leadscore:  Number(formData['LeadScore']),
+            leadvalue:  Number(formData['LeadValue']),
+            utm_medium: clickParams.utm_medium,
+            timestamp:  new Date().toISOString()
+          });
+          console.log('📤 [dopplerFormSubmit] enviado a GTM');
+        } else {
+          console.warn('dataLayer no disponible. ¿GTM está instalado?');
+        }
+
+        // ── POST A GOOGLE APPS SCRIPT (fire-and-forget) ──────────
+        // keepalive asegura que la petición se complete aunque
+        // Doppler navegue a una página de agradecimiento.
+        //
+        // ⚠️ PENDIENTE: falta el spreadsheetId real y la URL del webhook de
+        // Apps Script (todavía no están definidos para este programa). Hasta
+        // reemplazar los dos placeholders de abajo, este bloque no escribe
+        // en ningún Sheet real.
+        const payload = Object.assign({}, formData, {
+          spreadsheetId: 'REPLACE_WITH_SPREADSHEET_ID',
+          phonePrefix:   phonePrefix.replace('+', ''),
+          phoneNumber:   phoneNumber,
+          // Fecha/hora de carga del lead (hora Argentina) — columna Timestamp del Sheet
+          timestamp:     timestampBuenosAires(),
+          // UTMs explícitos desde captureClickParams() — no depende de la inyección de campos hidden
+          utm:           clickParams.utm,
+          utm_source:    clickParams.utm_source,
+          utm_medium:    clickParams.utm_medium,
+          utm_campaign:  clickParams.utm_campaign,
+          utm_term:      clickParams.utm_term,
+          utm_content:   clickParams.utm_content
+        });
+
+        // Sheets: enviar código de país y número por separado (phonePrefix + phoneNumber).
+        // Se elimina el campo de teléfono combinado para que no llegue duplicado a Sheets.
+        // GTM NO se ve afectado (usa sha256_phone_number / ph calculados antes).
+        if (phoneField && phoneField.name) delete payload[phoneField.name];
+        if (dopplerPhoneKey)               delete payload[dopplerPhoneKey]; // elimina _dp_phone219293 (ya separado en phonePrefix/phoneNumber)
+        ['PHONE', 'phone'].forEach(function (k) { delete payload[k]; });
+
+        // Sanitizar campos de teléfono: Google Sheets interpreta el '+' inicial como
+        // operador de fórmula y devuelve #ERROR!. Se elimina solo en el payload de Sheets.
+        Object.keys(payload).forEach(function (key) {
+          if (typeof payload[key] === 'string' && /^\+\d/.test(payload[key])) {
+            payload[key] = payload[key].replace(/^\+/, '');
+          }
+        });
+
+        console.log('📤 Payload → Sheets (teléfono):', 'phonePrefix:', payload.phonePrefix, '| phoneNumber:', payload.phoneNumber);
+        console.log('📤 Payload → Sheets (UTMs):', JSON.stringify({
+          utm:          payload.utm,
+          utm_source:   payload.utm_source,
+          utm_medium:   payload.utm_medium,
+          utm_campaign: payload.utm_campaign,
+          utm_term:     payload.utm_term,
+          utm_content:  payload.utm_content
+        }));
+        console.log('📤 captureClickParams en submit:', JSON.stringify(captureClickParams()));
+
+        fetch(
+          'REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL',
+          {
+            method:    'POST',
+            mode:      'no-cors',
+            body:      JSON.stringify(payload),
+            keepalive: true
+          }
+        ).catch(function (err) { console.error('[Sheets] Error:', err); });
+
+      }; // end handleSubmit
+
+      // Esperar a que Doppler inyecte el formulario en el DOM
+      const checkInterval = setInterval(function () {
+        const form = document.querySelector('form[data-dp-form], form');
+        if (form) {
+          clearInterval(checkInterval);
+          injectClickParamFields(form);
+          form.addEventListener('submit', handleSubmit);
+          // Ocultar campos — Doppler renderiza de forma asíncrona,
+          // el MutationObserver garantiza que se oculten aunque lleguen tarde.
+          hideFormFields(form);
+          makeFieldsRequired(form);
+          const fieldObserver = new MutationObserver(function () {
+            hideFormFields(form);
+            makeFieldsRequired(form);
+          });
+          fieldObserver.observe(form, { childList: true, subtree: true });
+          setTimeout(function () { fieldObserver.disconnect(); }, 5000);
+          console.log('✅ Listener de formulario configurado');
+        }
+      }, 500);
+
+      // Timeout de seguridad (detener polling tras 10 segundos)
+      setTimeout(function () { clearInterval(checkInterval); }, 10000);
+    }
+
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', captureFormData);
+    } else {
+      captureFormData();
+    }
+  </script>
+</head>
+
+<body style="background-color: #f7f7f7; margin: 0; padding: 0;">
+  <h1>Formulario de Suscripción</h1>
+
+  <!-- Método 1: Formulario embebido con script -->
+  <div data-dp-form="TPKCHvISMx1tzZ1AeKLquw%3D%3D"></div>
+
+  <p style="font-size: 12px; margin-top: 8px; text-align: center; font-family: Arial, Helvetica, sans-serif; color: #555555;">
+    Al completar este formulario, aceptás los
+    <a href="https://www.iae.edu.ar/terminos-y-condiciones/" target="_blank" rel="noopener noreferrer" style="color: #555555;">
+      Términos y Condiciones
+    </a>
+    de IAE Business School.
+  </p>
+
+  <!-- Método 2: iframe (comentado por defecto, descomentá si preferís usar el iframe) -->
+  <!--
+    <iframe id='doppler_subscription'
+            src='https://app2.fromdoppler.com/Lists/FormProcessing/PublishedForm?IdForm=TPKCHvISMx1tzZ1AeKLquw%3D%3D'
+            height='335'
+            width='375'
+            scrolling='yes'
+            frameborder='no'
+            style='overflow:scroll'>
+    </iframe>
+    -->
+</body>
+
+</html>
