@@ -9,14 +9,13 @@
 // utm_source | utm_medium | utm_content | utm_term | utm_campaign | campaniaid | Canal |
 // Plantilla auto respuesta | Derivar a | Derivar a cola
 //
-// ⚠️ OJO: a diferencia del Sheet de Ventas, ESTE Sheet todavia NO tiene las 6
-// columnas de scoring al final (Formacion academica | Cargo | Area practica |
-// Score | Value | Timestamp) -- el header row termina en "Derivar a cola"
-// (columna 25). El appendRow() de abajo las escribe igual en las columnas 26-31
-// porque es puramente posicional, pero van a quedar sin titulo hasta que alguien
-// agregue esos 6 encabezados a mano en el Sheet. Avisar al equipo antes de dar
-// esto por terminado.
+// A diferencia del Sheet de Ventas, ESTE Sheet todavia no tenia las 6 columnas
+// de scoring al final (Formacion academica | Cargo | Area practica | Score |
+// Value | Timestamp) -- el header row terminaba en "Derivar a cola" (columna
+// 25). Para no depender de que alguien las tipee bien a mano, ensureHeaders()
+// las agrega solas la primera vez que corre el script (ver mas abajo).
 const SPREADSHEET_ID = "1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA";
+const SCORING_HEADERS = ['Formacion academica', 'Cargo', 'Area practica', 'Score', 'Value', 'Timestamp'];
 
 function doPost(e) {
   try {
@@ -37,6 +36,8 @@ function doPost(e) {
     if (!sheet) {
       throw new Error('No se encontro la pestana con gid=0.');
     }
+
+    ensureHeaders(sheet);
 
     // Provincia DP, Ciudad DP, Telefono Codigo Area, Producto Nombre, ID., campaniaid,
     // Canal, Plantilla auto respuesta, Derivar a y Derivar a cola no tienen un campo
@@ -89,4 +90,16 @@ function doPost(e) {
       .createTextOutput(JSON.stringify({ status: 'error', message: err.message }))
       .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+/**
+ * Si el header row (fila 1) todavia termina en "Derivar a cola" (columna 25,
+ * layout heredado de Director de Ventas), agrega los 6 encabezados de scoring
+ * en las columnas 26-31. Idempotente: si ya estan, no hace nada.
+ */
+function ensureHeaders(sheet) {
+  const lastCol = sheet.getLastColumn();
+  if (lastCol >= 26) return; // ya tiene (al menos) la primera columna nueva
+  const startCol = lastCol + 1;
+  sheet.getRange(1, startCol, 1, SCORING_HEADERS.length).setValues([SCORING_HEADERS]);
 }

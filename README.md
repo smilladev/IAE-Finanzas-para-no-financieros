@@ -568,7 +568,22 @@ fbq('track', 'Lead', {
 
 **Endpoint:** `REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL` (pendiente — ver estado al inicio de este documento)
 
-El POST va con `mode: 'no-cors'`, así que el navegador nunca ve la respuesta real; `Script.js` responde `{status:'ok'}` o `{status:'error', message}` y hace `sheet.appendRow([...])` en un orden posicional que calza con la fila de encabezados real del Sheet (confirmada por CSV export — ver comentario en `Script.js`). Ojo: al Sheet le faltan agregar las 6 columnas de scoring al final antes de ir a producción.
+El POST va con `mode: 'no-cors'`, así que el navegador nunca ve la respuesta real; `Script.js` responde `{status:'ok'}` o `{status:'error', message}` y hace `sheet.appendRow([...])` en un orden posicional que calza con la fila de encabezados real del Sheet (confirmada por CSV export — ver comentario en `Script.js`). Las 6 columnas de scoring que le faltaban al Sheet (Formación académica, Cargo, Área práctica, Score, Value, Timestamp) las agrega solo `ensureHeaders()` la primera vez que corre — no hace falta tipearlas a mano.
+
+#### Cómo deployar el webhook (para quien tenga acceso de Editor al Sheet)
+
+1. Abrir el [Sheet](https://docs.google.com/spreadsheets/d/1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA/edit?gid=0) → menú **Extensiones → Apps Script**.
+2. Borrar el contenido de `Code.gs` (o el archivo que abra por defecto) y pegar ahí el contenido completo de [`Script.js`](./Script.js) de este repo.
+3. Guardar (ícono de disquete o `Ctrl+S`).
+4. **Implementar → Nueva implementación** (ícono de engranaje → tipo **Aplicación web**):
+   - Descripción: lo que quieran (ej. "Webhook Finanzas para no Financieros v1").
+   - Ejecutar como: **Yo** (la cuenta que hace el deploy).
+   - Quién tiene acceso: **Cualquier usuario** (tiene que poder recibir el POST sin login).
+5. Autorizar los permisos que pida Google la primera vez (acceso a Sheets de esta cuenta).
+6. Copiar la **URL de la aplicación web** que aparece al terminar — esa es la URL del webhook.
+7. Pasarnos esa URL para reemplazar el placeholder `REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL` en `index.html`.
+
+⚠️ **Importante para actualizaciones futuras**: si más adelante hay que modificar `Script.js`, hay que ir a **Implementar → Administrar implementaciones → ✏️ (editar) → Nueva versión**, **no** crear "Nueva implementación" de nuevo — eso generaría una URL distinta y el `index.html` ya publicado seguiría apuntando a la versión vieja (congelada), sin ningún error visible.
 
 **Payload enviado (ejemplo):**
 ```json
