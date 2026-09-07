@@ -4,7 +4,7 @@
 
 Este sistema calcula automáticamente el **Lead Score** (0-100%) y el **Lead Value** (USD) de cada lead capturado a través del formulario Doppler del programa **Finanzas para no Financieros** (IAE Business School). El sistema evalúa múltiples dimensiones del perfil del lead y envía los datos a Google Tag Manager (GTM), plataformas de publicidad (Google Ads y Meta Ads) y a un Google Sheet vía webhook de Google Apps Script.
 
-> ⚠️ **Estado**: Sheet destino confirmado — [1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA](https://docs.google.com/spreadsheets/d/1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA/edit?gid=0), mismo layout de 25 columnas que Director de Ventas — pero **todavía le faltan las 6 columnas de scoring al final** (Formación académica, Cargo, Área práctica, Score, Value, Timestamp; ver nota en `Script.js`). Falta también el deployment de Apps Script (webhook, placeholder `REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL` en `index.html`). El scoring, hashing y envío a GTM ya están probados y funcionando.
+> ✅ **Estado (2026-09-07)**: circuito completo probado de punta a punta. Sheet destino confirmado — [1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA](https://docs.google.com/spreadsheets/d/1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA/edit?gid=0) — con las 6 columnas de scoring ya agregadas (`ensureHeaders()` las creó solas en el primer POST real). Webhook de Apps Script deployado y probado con `curl`: responde `{"status":"ok"}` y escribe la fila correctamente. Scoring, hashing y envío a GTM también probados. Pendiente: borrar las filas de prueba (`QA-CurlTest*`) del Sheet — no son leads reales.
 
 ---
 
@@ -242,7 +242,7 @@ Los campos utilizan IDs internos de Doppler (misma cuenta que el form de Directo
 
 6. **Envío a Sheets vía Apps Script (Fire-and-Forget):**
    ```javascript
-   fetch("REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL", {
+   fetch("https://script.google.com/macros/s/AKfycby-mvtOVE88wrEEZIYr9nwOx4cnZuC00DblKAuMcV0oCKvz1Y3-Ua-nPAmFAYcM7B26og/exec", {
      method: "POST",
      mode: "no-cors",
      body: JSON.stringify(payload),
@@ -566,24 +566,19 @@ fbq('track', 'Lead', {
 
 ### Google Apps Script (Web App) → Google Sheets
 
-**Endpoint:** `REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL` (pendiente — ver estado al inicio de este documento)
+**Endpoint (confirmado y probado, 2026-09-07):** `https://script.google.com/macros/s/AKfycby-mvtOVE88wrEEZIYr9nwOx4cnZuC00DblKAuMcV0oCKvz1Y3-Ua-nPAmFAYcM7B26og/exec`
 
-El POST va con `mode: 'no-cors'`, así que el navegador nunca ve la respuesta real; `Script.js` responde `{status:'ok'}` o `{status:'error', message}` y hace `sheet.appendRow([...])` en un orden posicional que calza con la fila de encabezados real del Sheet (confirmada por CSV export — ver comentario en `Script.js`). Las 6 columnas de scoring que le faltaban al Sheet (Formación académica, Cargo, Área práctica, Score, Value, Timestamp) las agrega solo `ensureHeaders()` la primera vez que corre — no hace falta tipearlas a mano.
+El POST va con `mode: 'no-cors'`, así que el navegador nunca ve la respuesta real; `Script.js` responde `{status:'ok'}` o `{status:'error', message}` y hace `sheet.appendRow([...])` en un orden posicional que calza con la fila de encabezados real del Sheet. Las 6 columnas de scoring que le faltaban al Sheet (Formación académica, Cargo, Área práctica, Score, Value, Timestamp) las agregó `ensureHeaders()` sola en el primer POST — no hicieron falta tipearlas a mano. Probado con `curl` (ver nota de encoding más abajo): responde `{"status":"ok"}` y la fila aparece completa en el Sheet.
 
-#### Cómo deployar el webhook (para quien tenga acceso de Editor al Sheet)
+⚠️ Hay filas de prueba (`QA-CurlTest`, `QA-CurlTest2`, y una fila vacía con Score/Value=0) en el Sheet de los tests de esta sesión — hay que borrarlas a mano antes de ir a producción, no son leads reales.
 
-1. Abrir el [Sheet](https://docs.google.com/spreadsheets/d/1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA/edit?gid=0) → menú **Extensiones → Apps Script**.
-2. Borrar el contenido de `Code.gs` (o el archivo que abra por defecto) y pegar ahí el contenido completo de [`Script.js`](./Script.js) de este repo.
-3. Guardar (ícono de disquete o `Ctrl+S`).
-4. **Implementar → Nueva implementación** (ícono de engranaje → tipo **Aplicación web**):
-   - Descripción: lo que quieran (ej. "Webhook Finanzas para no Financieros v1").
-   - Ejecutar como: **Yo** (la cuenta que hace el deploy).
-   - Quién tiene acceso: **Cualquier usuario** (tiene que poder recibir el POST sin login).
-5. Autorizar los permisos que pida Google la primera vez (acceso a Sheets de esta cuenta).
-6. Copiar la **URL de la aplicación web** que aparece al terminar — esa es la URL del webhook.
-7. Pasarnos esa URL para reemplazar el placeholder `REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL` en `index.html`.
+#### Cómo re-deployar el webhook si hace falta modificar `Script.js`
 
-⚠️ **Importante para actualizaciones futuras**: si más adelante hay que modificar `Script.js`, hay que ir a **Implementar → Administrar implementaciones → ✏️ (editar) → Nueva versión**, **no** crear "Nueva implementación" de nuevo — eso generaría una URL distinta y el `index.html` ya publicado seguiría apuntando a la versión vieja (congelada), sin ningún error visible.
+1. Abrir el [Sheet](https://docs.google.com/spreadsheets/d/1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA/edit?gid=0) → **Extensiones → Apps Script**.
+2. Pegar la versión actualizada de [`Script.js`](./Script.js) y guardar (`Ctrl+S`).
+3. **Implementar → Administrar implementaciones → ✏️ (editar) → Nueva versión.**
+
+⚠️ **Nunca** crear "Nueva implementación" de nuevo sobre un deployment ya existente — eso genera una URL distinta y `index.html` seguiría apuntando a la versión vieja (congelada), sin ningún error visible.
 
 **Payload enviado (ejemplo):**
 ```json
@@ -703,7 +698,9 @@ Para modificaciones o consultas sobre el sistema de scoring:
 - ✅ Regla de descalificación por campo = 0 (solo Nivel de Estudios puede dar 0)
 - ✅ Ocultamiento del campo Industria (peso 0%)
 - ✅ Validado en navegador: scoring, hashing SHA-256, mapeo de país y eventos GTM
-- ⏳ Pendiente: spreadsheet destino y deployment de Apps Script (webhook)
+- ✅ Sheet destino confirmado, webhook de Apps Script deployado y probado con `curl` end-to-end
+- ✅ `ensureHeaders()` agrega solas las columnas de scoring que le faltaban al Sheet
+- ⏳ Pendiente: borrar filas de prueba (`QA-CurlTest*`) del Sheet antes de producción
 
 ---
 

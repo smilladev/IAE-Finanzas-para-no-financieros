@@ -521,10 +521,8 @@
         // keepalive asegura que la petición se complete aunque
         // Doppler navegue a una página de agradecimiento.
         //
-        // ⚠️ PENDIENTE: falta la URL del webhook de Apps Script (todavía no
-        // hay deployment para este programa). El spreadsheetId ya es el real
-        // (Sheet confirmado 2026-09-07). Hasta reemplazar el placeholder de
-        // abajo, este bloque no escribe en ningún Sheet real.
+        // Webhook y spreadsheetId confirmados (2026-09-07). Probado con curl:
+        // {"status":"ok"} + fila escrita correctamente en el Sheet real.
         const payload = Object.assign({}, formData, {
           spreadsheetId: '1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA',
           phonePrefix:   phonePrefix.replace('+', ''),
@@ -567,7 +565,7 @@
         console.log('📤 captureClickParams en submit:', JSON.stringify(captureClickParams()));
 
         fetch(
-          'REPLACE_WITH_APPS_SCRIPT_WEBHOOK_URL',
+          'https://script.google.com/macros/s/AKfycby-mvtOVE88wrEEZIYr9nwOx4cnZuC00DblKAuMcV0oCKvz1Y3-Ua-nPAmFAYcM7B26og/exec',
           {
             method:    'POST',
             mode:      'no-cors',
