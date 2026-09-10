@@ -302,13 +302,18 @@
           "Tecnología / Sistemas": 9
         };
 
-        // Pesos por dimensión (pts → score %, usd → lead value)
+        // Peso de cada dimensión como fracción del 100% (pts = fracción * 100)
         // Industria, N° de empleados y Años de experiencia quedan sin peso (no participan del scoring)
-        // Valor base del programa: (3670000/1500 * 0.3) / 14 = 52.42857143
+        const PESO_FRACCION = { estudios: 0.01, cargo: 0.33, area: 0.66 };
+
+        // Valor base del programa: valor en USD de un lead con Lead Score = 100%.
+        const VALOR_BASE_PROGRAMA = 8;
+
+        // Pesos por dimensión (pts → score %, usd → lead value)
         const PESOS = {
-          estudios: { pts: 1,  usd: 0.5242857143 },
-          cargo:    { pts: 33, usd: 17.30142857 },
-          area:     { pts: 66, usd: 34.60285714 }
+          estudios: { pts: PESO_FRACCION.estudios * 100, usd: VALOR_BASE_PROGRAMA * PESO_FRACCION.estudios },
+          cargo:    { pts: PESO_FRACCION.cargo    * 100, usd: VALOR_BASE_PROGRAMA * PESO_FRACCION.cargo },
+          area:     { pts: PESO_FRACCION.area     * 100, usd: VALOR_BASE_PROGRAMA * PESO_FRACCION.area }
         };
 
         // Capturar todos los campos del formulario

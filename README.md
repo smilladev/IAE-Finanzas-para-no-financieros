@@ -77,14 +77,14 @@ Lead Score (%) =
 
 ```javascript
 Lead Value (USD) =
-  (scoreEstudios / 10) × 0.5242857143 +
-  (scoreCargo    / 10) × 17.30142857 +
-  (scoreArea     / 10) × 34.60285714
+  (scoreEstudios / 10) × 0.08 +
+  (scoreCargo    / 10) × 2.64 +
+  (scoreArea     / 10) × 5.28
 ```
 
-**Valor base del programa (100% de score):** `(3670000/1500 × 0.3) / 14 = 52.42857143`
+**Valor base del programa (100% de score):** `VALOR_BASE_PROGRAMA = $8` (actualizado 2026-09-10; antes `$52.42857143`).
 
-Cada peso `usd` de arriba es `VALOR_BASE × peso_del_campo` (ej: cargo = `52.42857143 × 0.33 = 17.30142857`). Este valor debe ajustarse según el análisis estadístico de conversiones offline del equipo de Growth.
+Cada peso `usd` de arriba es `VALOR_BASE_PROGRAMA × peso_del_campo` (ej: cargo = `8 × 0.33 = 2.64`). En `index.html`, `VALOR_BASE_PROGRAMA` es una constante única — para cambiar el valor del programa solo hay que editar ese número, los `pts` (Lead Score %) no se tocan.
 
 ---
 
@@ -264,7 +264,7 @@ Los campos utilizan IDs internos de Doppler (misma cuenta que el form de Directo
     '_dp_string219311': 'Agricultura y Ganadería',
     '_dp_string35228': 'Administración & Finanzas',
     'LeadScore': 83.5,         // Calculado automáticamente
-    'LeadValue': 43.78,        // Calculado automáticamente
+    'LeadValue': 6.68,         // Calculado automáticamente
     // ... otros campos del formulario
   },
   'timestamp': '2026-09-07T14:30:00.000Z'
@@ -457,7 +457,7 @@ const leadScore =
 **Cálculo:**
 ```
 Lead Score = (10/10)×1 + (10/10)×33 + (10/10)×66 = 1 + 33 + 66 = 100%
-Lead Value = (10/10)×0.5242857143 + (10/10)×17.30142857 + (10/10)×34.60285714 = $52.43
+Lead Value = (10/10)×0.08 + (10/10)×2.64 + (10/10)×5.28 = $8.00
 ```
 
 ### Ejemplo 2: Lead Medio
@@ -470,7 +470,7 @@ Lead Value = (10/10)×0.5242857143 + (10/10)×17.30142857 + (10/10)×34.60285714
 **Cálculo:**
 ```
 Lead Score = (10/10)×1 + (7/10)×33 + (9/10)×66 = 1 + 23.1 + 59.4 = 83.5%
-Lead Value = (10/10)×0.524 + (7/10)×17.301 + (9/10)×34.603 = $43.78
+Lead Value = (10/10)×0.08 + (7/10)×2.64 + (9/10)×5.28 = $6.68
 ```
 
 ### Ejemplo 3: Lead Descalificado
@@ -588,7 +588,7 @@ El POST va con `mode: 'no-cors'`, así que el navegador nunca ve la respuesta re
   "_dp_string219311": "Agricultura y Ganadería",
   "_dp_string35228": "Administración & Finanzas",
   "LeadScore": 83.5,
-  "LeadValue": 43.78,
+  "LeadValue": 6.68,
   "spreadsheetId": "1lSXgDLylzhRA3Fyh0C7x3-cLRUb2p0DJCQNGopWIjGA",
   "phonePrefix": "54",
   "phoneNumber": "91122334455",
