@@ -77,14 +77,14 @@ Lead Score (%) =
 
 ```javascript
 Lead Value (USD) =
-  (scoreEstudios / 10) × 0.08 +
-  (scoreCargo    / 10) × 2.64 +
-  (scoreArea     / 10) × 5.28
+  (scoreEstudios / 10) × 0.0811 +
+  (scoreCargo    / 10) × 2.6763 +
+  (scoreArea     / 10) × 5.3526
 ```
 
-**Valor base del programa (100% de score):** `VALOR_BASE_PROGRAMA = $8` (actualizado 2026-09-10; antes `$52.42857143`).
+**Valor base del programa (100% de score):** `VALOR_BASE_PROGRAMA = $8.11` (actualizado 2026-09-29 según el Valor MQL de la planilla: `3.670.000 / 1.617 × 5% × 1/14`; antes `$8`, y antes `$52.42857143`).
 
-Cada peso `usd` de arriba es `VALOR_BASE_PROGRAMA × peso_del_campo` (ej: cargo = `8 × 0.33 = 2.64`). En `index.html`, `VALOR_BASE_PROGRAMA` es una constante única — para cambiar el valor del programa solo hay que editar ese número, los `pts` (Lead Score %) no se tocan.
+Cada peso `usd` de arriba es `VALOR_BASE_PROGRAMA × peso_del_campo` (ej: cargo = `8.11 × 0.33 = 2.6763`). En `index.html`, `VALOR_BASE_PROGRAMA` es una constante única — para cambiar el valor del programa solo hay que editar ese número, los `pts` (Lead Score %) no se tocan.
 
 ---
 
@@ -110,31 +110,31 @@ Esto garantiza que solo leads completos y relevantes reciban valorización.
 | `Terciario completo` | 10 |
 | `Universitario incompleto` | 10 |
 | `Universitario completo` | 10 |
-| `Posgrado/Maestría` | 10 |
-| `Doctorado/PhD` | 10 |
+| `Posgrado/Maestría` | 1 |
+| `Doctorado/PhD` | 1 |
 
 ### 2. Cargo (33%)
 
 | Opción | Score |
 |--------|-------|
 | `Académico` | 1 |
-| `Analista` | 9 |
+| `Analista` | 7 |
 | `Asesor/Consultor` | 2 |
 | `Asistente / Administrativo` | 10 |
-| `Auditor` | 2 |
+| `Auditor` | 1 |
 | `Coordinador / Supervisor` | 10 |
 | `Desocupado` | 1 |
-| `Director de Área` | 7 |
+| `Director de Área` | 2 |
 | `Director en Directorio` | 7 |
-| `Director General` | 7 |
-| `Dueño / Socio` | 9 |
+| `Director General` | 2 |
+| `Dueño / Socio` | 10 |
 | `Ejecutivo Comercial / KAM / Ventas` | 9 |
-| `Emprendedor` | 9 |
-| `Especialista (en relación de dependencia: abogado, ingeniero, programador, diseñador...)` | 9 |
+| `Emprendedor` | 8 |
+| `Especialista (en relación de dependencia: abogado, ingeniero, programador, diseñador...)` | 7 |
 | `Funcionario Público` | 1 |
 | `Gerente de Área` | 9 |
 | `Gerente General / CEO` | 7 |
-| `Jefe de Área / Departamento` | 10 |
+| `Jefe de Área / Departamento` | 8 |
 | `Presidente` | 1 |
 | `Profesional Independiente` | 8 |
 | `Subgte. Area` | 9 |
@@ -146,25 +146,25 @@ Esto garantiza que solo leads completos y relevantes reciban valorización.
 | Opción | Score |
 |--------|-------|
 | `Académico / Formación` | 2 |
-| `Administración & Finanzas` | 9 |
+| `Administración & Finanzas` | 6 |
 | `Calidad / Seguridad / Medio Ambiente (HSE)` | 2 |
 | `Comercial / Ventas / Customer Experience` | 10 |
-| `Control de Gestión / Auditoría` | 8 |
-| `Data & Analytics / Transformación Digital` | 1 |
+| `Control de Gestión / Auditoría` | 3 |
+| `Data & Analytics / Transformación Digital` | 7 |
 | `Dirección General / Alta Gerencia` | 1 |
-| `Investigación & Desarrollo (I+D)` | 1 |
-| `Legal & Compliance` | 1 |
-| `Marketing & Comunicación` | 1 |
+| `Investigación & Desarrollo (I+D)` | 7 |
+| `Legal & Compliance` | 3 |
+| `Marketing & Comunicación` | 9 |
 | `Operaciones / Supply Chain` | 9 |
-| `Otros` | 5 |
-| `Planeamiento Estratégico / Desarrollo de Negocios` | 8 |
+| `Otros` | 9 |
+| `Planeamiento Estratégico / Desarrollo de Negocios` | 2 |
 | `Producto & Innovación` | 2 |
-| `Proyectos & Ingeniería` | 7 |
-| `Recursos Humanos` | 1 |
+| `Proyectos & Ingeniería` | 9 |
+| `Recursos Humanos` | 7 |
 | `Relaciones Institucionales / Comunicación Externa` | 1 |
 | `Salud / Servicios Médicos` | 1 |
 | `Sustentabilidad, ESG & Responsabilidad Social` | 1 |
-| `Tecnología / Sistemas` | 9 |
+| `Tecnología / Sistemas` | 2 |
 
 ### 4. Industria, N° de Empleados, Años de Experiencia (0%)
 
@@ -450,27 +450,27 @@ const leadScore =
 ### Ejemplo 1: Lead Premium (Score Alto)
 
 **Datos del Lead:**
-- Estudios: `Doctorado/PhD` → Score: 10
+- Estudios: `Universitario completo` → Score: 10
 - Cargo: `Coordinador / Supervisor` → Score: 10
 - Área: `Comercial / Ventas / Customer Experience` → Score: 10
 
 **Cálculo:**
 ```
 Lead Score = (10/10)×1 + (10/10)×33 + (10/10)×66 = 1 + 33 + 66 = 100%
-Lead Value = (10/10)×0.08 + (10/10)×2.64 + (10/10)×5.28 = $8.00
+Lead Value = (10/10)×0.0811 + (10/10)×2.6763 + (10/10)×5.3526 = $8.11
 ```
 
 ### Ejemplo 2: Lead Medio
 
 **Datos del Lead:**
 - Estudios: `Universitario completo` → Score: 10
-- Cargo: `Director General` → Score: 7
-- Área: `Administración & Finanzas` → Score: 9
+- Cargo: `Director General` → Score: 2
+- Área: `Administración & Finanzas` → Score: 6
 
 **Cálculo:**
 ```
-Lead Score = (10/10)×1 + (7/10)×33 + (9/10)×66 = 1 + 23.1 + 59.4 = 83.5%
-Lead Value = (10/10)×0.08 + (7/10)×2.64 + (9/10)×5.28 = $6.68
+Lead Score = (10/10)×1 + (2/10)×33 + (6/10)×66 = 1 + 6.6 + 39.6 = 47.2%
+Lead Value = (10/10)×0.0811 + (2/10)×2.6763 + (6/10)×5.3526 = $3.83
 ```
 
 ### Ejemplo 3: Lead Descalificado

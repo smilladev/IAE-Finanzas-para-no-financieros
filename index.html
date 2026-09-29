@@ -248,30 +248,30 @@
           "Terciario completo": 10,
           "Universitario incompleto": 10,
           "Universitario completo": 10,
-          "Posgrado/Maestría": 10,
-          "Doctorado/PhD": 10,
-          "Doctorado/PhD.": 10
+          "Posgrado/Maestría": 1,
+          "Doctorado/PhD": 1,
+          "Doctorado/PhD.": 1
         };
 
         const cargoScoring = {
           "Académico": 1,
-          "Analista": 9,
+          "Analista": 7,
           "Asesor/Consultor": 2,
           "Asistente / Administrativo": 10,
-          "Auditor": 2,
+          "Auditor": 1,
           "Coordinador / Supervisor": 10,
           "Desocupado": 1,
-          "Director de Área": 7,
+          "Director de Área": 2,
           "Director en Directorio": 7,
-          "Director General": 7,
-          "Dueño / Socio": 9,
+          "Director General": 2,
+          "Dueño / Socio": 10,
           "Ejecutivo Comercial / KAM / Ventas": 9,
-          "Emprendedor": 9,
-          "Especialista (en relación de dependencia: abogado, ingeniero, programador, diseñador...)": 9,
+          "Emprendedor": 8,
+          "Especialista (en relación de dependencia: abogado, ingeniero, programador, diseñador...)": 7,
           "Funcionario Público": 1,
           "Gerente de Área": 9,
           "Gerente General / CEO": 7,
-          "Jefe de Área / Departamento": 10,
+          "Jefe de Área / Departamento": 8,
           "Presidente": 1,
           "Profesional Independiente": 8,
           "Subgte. Area": 9,
@@ -281,25 +281,25 @@
 
         const areaScoring = {
           "Académico / Formación": 2,
-          "Administración & Finanzas": 9,
+          "Administración & Finanzas": 6,
           "Calidad / Seguridad / Medio Ambiente (HSE)": 2,
           "Comercial / Ventas / Customer Experience": 10,
-          "Control de Gestión / Auditoría": 8,
-          "Data & Analytics / Transformación Digital": 1,
+          "Control de Gestión / Auditoría": 3,
+          "Data & Analytics / Transformación Digital": 7,
           "Dirección General / Alta Gerencia": 1,
-          "Investigación & Desarrollo (I+D)": 1,
-          "Legal & Compliance": 1,
-          "Marketing & Comunicación": 1,
+          "Investigación & Desarrollo (I+D)": 7,
+          "Legal & Compliance": 3,
+          "Marketing & Comunicación": 9,
           "Operaciones / Supply Chain": 9,
-          "Otros": 5,
-          "Planeamiento Estratégico / Desarrollo de Negocios": 8,
+          "Otros": 9,
+          "Planeamiento Estratégico / Desarrollo de Negocios": 2,
           "Producto & Innovación": 2,
-          "Proyectos & Ingeniería": 7,
-          "Recursos Humanos": 1,
+          "Proyectos & Ingeniería": 9,
+          "Recursos Humanos": 7,
           "Relaciones Institucionales / Comunicación Externa": 1,
           "Salud / Servicios Médicos": 1,
           "Sustentabilidad, ESG & Responsabilidad Social": 1,
-          "Tecnología / Sistemas": 9
+          "Tecnología / Sistemas": 2
         };
 
         // Peso de cada dimensión como fracción del 100% (pts = fracción * 100)
@@ -307,7 +307,7 @@
         const PESO_FRACCION = { estudios: 0.01, cargo: 0.33, area: 0.66 };
 
         // Valor base del programa: valor en USD de un lead con Lead Score = 100%.
-        const VALOR_BASE_PROGRAMA = 8;
+        const VALOR_BASE_PROGRAMA = 8.11;
 
         // Pesos por dimensión (pts → score %, usd → lead value)
         const PESOS = {
